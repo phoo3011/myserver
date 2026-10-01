@@ -1,0 +1,41 @@
+name: Unit Test Pipeline
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  run-unit-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project (TypeScript to JS)
+        run: npm run build
+
+      - name: Run Unit Test (Test1.js)
+        run: |
+          output=$(node dist/Test1.js)
+          echo "Test Result Output: $output"
+          
+          exit_code=$output
+          
+          if [ "$exit_code" -ne 0 ]; then
+            echo "Error: Unit Test ล้มเหลว (Exit code: $exit_code)"
+            exit 1
+          else
+            echo "Success: Unit Test ผ่านเรียบร้อย!"
+            exit 0
+          fi

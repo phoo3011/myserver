@@ -1,8 +1,18 @@
 *
 !.gitignore
+!package.json
+!package-lock.json
+!tsconfig.json
+!nodemon.json
+
 !dist/
 !dist/index.js
+!dist/Test1.js
+!dist/Utils.js
 
 !.github/
 !.github/workflows/
 !.github/workflows/*
+
+!src/
+!src/**/*.ts
