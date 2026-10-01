@@ -1,0 +1,8 @@
+*
+!.gitignore
+!dist/
+!dist/index.js
+
+!.github/
+!.github/workflows/
+!.github/workflows/*

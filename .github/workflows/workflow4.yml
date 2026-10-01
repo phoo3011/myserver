@@ -1,0 +1,15 @@
+name: workflow 4
+
+on:
+  workflow_run:
+    workflows: ["workflow 3"]
+    types:
+      - completed
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print text
+        run: echo "Hello JS"
