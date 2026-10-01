@@ -1,12 +1,14 @@
 name: Workflow 1
 on:
-push:
-...
+  push:
 jobs:
-job1:
-runs-on: ubuntu-latest
-
-steps:
-...
-job2:
-runs-on: ubuntu-latest
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+  job2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
