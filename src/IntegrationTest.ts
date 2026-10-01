@@ -6,7 +6,7 @@ const integrationTest = async () => {
     OrderSystem.AddOrder('Apple', 20, 2);
     OrderSystem.AddOrder('Banana', 15, 3);
     
-    if (OrderSystem.Checkout() === 999) {
+    if (OrderSystem.Checkout() === 85) {
         console.log('Test case 1 passed');
     } else {
         console.log('Test case 1 failed');
