@@ -9,17 +9,19 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/index.ts",
-    "dev": "nodemon",
+    "dev": "tsx watch ./src/index.ts",
     "build": "tsc"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "mongoose": "^9.10.4"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.3",
     "@types/supertest": "^7.2.1",
-    "nodemon": "^3.1.14",
     "supertest": "^7.3.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.15",

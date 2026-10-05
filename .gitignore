@@ -9,6 +9,9 @@
 !dist/index.js
 !dist/Test1.js
 !dist/Utils.js
+!dist/User.js
+!dist/UserController.js
+!dist/UserRoutes.js
 
 !.github/
 !.github/workflows/
@@ -16,3 +19,5 @@
 
 !src/
 !src/**/*.ts
+!src/public/
+!src/public/test.html

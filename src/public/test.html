@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>User Management</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --ink: #17211b;
+            --muted: #647067;
+            --line: #d8e0d9;
+            --surface: #ffffff;
+            --accent: #1f7a5a;
+            --accent-dark: #14543e;
+            --danger: #b42318;
+            --background: #f2f6f2;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--background);
+            color: var(--ink);
+            font-family: Georgia, 'Times New Roman', serif;
+        }
+
+        main {
+            width: min(960px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 56px 0;
+        }
+
+        header { margin-bottom: 28px; }
+
+        .eyebrow {
+            margin: 0 0 8px;
+            color: var(--accent);
+            font: 700 12px/1.2 Arial, sans-serif;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        h1, h2, p { margin-top: 0; }
+        h1 { margin-bottom: 8px; font-size: clamp(32px, 6vw, 54px); line-height: 1; }
+        h2 { margin-bottom: 20px; font-size: 25px; }
+        .intro { color: var(--muted); font: 16px/1.5 Arial, sans-serif; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(260px, 340px) 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        section {
+            padding: 24px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: 0 8px 24px rgba(23, 33, 27, 0.05);
+        }
+
+        label {
+            display: block;
+            margin: 16px 0 7px;
+            color: var(--muted);
+            font: 700 12px/1.2 Arial, sans-serif;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 13px;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            color: var(--ink);
+            font: 16px Arial, sans-serif;
+        }
+
+        input:focus { outline: 2px solid #9acbb5; border-color: var(--accent); }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px 16px;
+            border: 0;
+            border-radius: 4px;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            font: 700 14px Arial, sans-serif;
+        }
+
+        button:hover { background: var(--accent-dark); }
+        button:disabled { cursor: wait; opacity: 0.65; }
+
+        #status {
+            min-height: 22px;
+            margin: 16px 0 0;
+            font: 14px/1.4 Arial, sans-serif;
+        }
+
+        .success { color: var(--accent-dark); }
+        .error { color: var(--danger); }
+
+        #user-list { display: grid; gap: 10px; }
+
+        .user {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--line);
+            font-family: Arial, sans-serif;
+        }
+
+        .user:last-child { border-bottom: 0; }
+        .user-name { margin: 0 0 4px; font-weight: 700; }
+        .user-email { margin: 0; color: var(--muted); font-size: 14px; }
+        .delete { width: auto; margin: 0; padding: 8px 11px; background: transparent; color: var(--danger); border: 1px solid #e4b7b3; }
+        .delete:hover { background: #fff3f2; }
+        .empty { color: var(--muted); font: 15px Arial, sans-serif; }
+
+        @media (max-width: 700px) {
+            main { padding: 32px 0; }
+            .layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <p class="eyebrow">My Server</p>
+            <h1>User management</h1>
+            <p class="intro">Create and manage users connected to your MongoDB database.</p>
+        </header>
+
+        <div class="layout">
+            <section aria-labelledby="add-user-title">
+                <h2 id="add-user-title">Add a user</h2>
+                <form id="user-form">
+                    <label for="name">Name</label>
+                    <input id="name" name="name" required autocomplete="name">
+
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" required autocomplete="email">
+
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" required minlength="6" autocomplete="new-password">
+
+                    <button type="submit">Create user</button>
+                    <p id="status" role="status"></p>
+                </form>
+            </section>
+
+            <section aria-labelledby="users-title">
+                <h2 id="users-title">Users</h2>
+                <div id="user-list"><p class="empty">Loading users...</p></div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const form = document.querySelector('#user-form');
+        const status = document.querySelector('#status');
+        const userList = document.querySelector('#user-list');
+
+        const showStatus = (message, type) => {
+            status.textContent = message;
+            status.className = type;
+        };
+
+        const loadUsers = async () => {
+            try {
+                const response = await fetch('/api/users');
+                if (!response.ok) throw new Error('Could not load users');
+                const users = await response.json();
+                userList.replaceChildren();
+
+                if (!users.length) {
+                    userList.innerHTML = '<p class="empty">No users yet.</p>';
+                    return;
+                }
+
+                users.forEach((user) => {
+                    const item = document.createElement('article');
+                    item.className = 'user';
+                    item.innerHTML = `
+                        <div>
+                            <p class="user-name"></p>
+                            <p class="user-email"></p>
+                        </div>
+                        <button class="delete" type="button" data-id="${user._id}">Delete</button>
+                    `;
+                    item.querySelector('.user-name').textContent = user.name;
+                    item.querySelector('.user-email').textContent = user.email;
+                    userList.append(item);
+                });
+            } catch (error) {
+                userList.innerHTML = '<p class="empty error">Could not load users. Check the API and database connection.</p>';
+            }
+        };
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const button = form.querySelector('button[type="submit"]');
+            button.disabled = true;
+            showStatus('Creating user...', '');
+
+            try {
+                const data = Object.fromEntries(new FormData(form));
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Could not create user');
+                form.reset();
+                showStatus('User created successfully.', 'success');
+                await loadUsers();
+            } catch (error) {
+                showStatus(error.message, 'error');
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        userList.addEventListener('click', async (event) => {
+            const button = event.target.closest('.delete');
+            if (!button || !confirm('Delete this user?')) return;
+
+            button.disabled = true;
+            try {
+                const response = await fetch(`/api/users/${button.dataset.id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('Could not delete user');
+                await loadUsers();
+            } catch (error) {
+                showStatus(error.message, 'error');
+                button.disabled = false;
+            }
+        });
+
+        loadUsers();
+    </script>
+</body>
+</html>
