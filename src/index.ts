@@ -1,14 +1,19 @@
 import cors from 'cors';
 import express, { Request, Response } from 'express';
-import mongoose from 'mongoose';
 import path from 'path';
-import userRoutes from './UserRoutes';
+import userRoutes from './InMemoryUserRoutes';
 
 const app = express();
-const port = Number(process.env.PORT) || 3000;
-const mongoURI = process.env.MONGODB_URI;
+const ports = [
+    Number(process.env.PORT) || 3000,
+    Number(process.env.SECONDARY_PORT) || 3001,
+];
 
 app.get('/', (req: Request, res: Response) => {
+    res.send('Hello World!');
+});
+
+app.get('/users', (req: Request, res: Response) => {
     res.sendFile(path.join(__dirname, 'public', 'test.html'));
 });
 
@@ -21,20 +26,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', userRoutes);
 
-const start = async () => {
-    if (!mongoURI) {
-        throw new Error('MONGODB_URI is required');
-    }
-
-    await mongoose.connect(mongoURI);
-    console.log('Connected to MongoDB');
-
-    app.listen(port, () => {
-        console.log(`Server is running on port ${port}`);
+const start = () => {
+    ports.forEach((port) => {
+        app.listen(port, () => {
+            console.log(`Server is running on port ${port}`);
+        });
     });
 };
 
-start().catch((error) => {
-    console.error('Error starting server:', error);
-    process.exitCode = 1;
-});
+start();

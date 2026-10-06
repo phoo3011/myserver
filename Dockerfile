@@ -19,6 +19,6 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 
 USER node
-EXPOSE 3000
+EXPOSE 3000 3001
 
 CMD ["npm", "start"]
