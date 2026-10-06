@@ -4,6 +4,10 @@
 !package-lock.json
 !tsconfig.json
 !nodemon.json
+!Dockerfile
+!.dockerignore
+!docker-compose.yml
+!.env.example
 
 !dist/
 !dist/index.js

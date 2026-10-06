@@ -1,39 +1,40 @@
-import express, { Request, Response } from 'express';
-import { Utils } from './Utils';
-
-import mogoose from 'mongoose';
-import userRoutes from './UserRoutes';
 import cors from 'cors';
+import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import path from 'path';
+import userRoutes from './UserRoutes';
 
 const app = express();
-const port = process.env.PORT || 3000;
-const mongoURI = 'mongodb+srv://phooriwat3011_db_user:phoo3011@myserver.sgsfo5m.mongodb.net/?appName=myserver';
+const port = Number(process.env.PORT) || 3000;
+const mongoURI = process.env.MONGODB_URI;
 
 app.get('/', (req: Request, res: Response) => {
-    res.send('Hello, World!');
+    res.sendFile(path.join(__dirname, 'public', 'test.html'));
 });
 
-app.listen(port, () => {
-    console.log(`Server is running ${port}`);
+app.get('/health', (req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok' });
 });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Routes
 app.use('/api', userRoutes);
 
-mongoose.connect(mongoURI)
-    .then(() => {
-        console.log('Connected to MongoDB');
-        app.listen(port, () => {
-            console.log(`Server is running on port ${port}`);
+const start = async () => {
+    if (!mongoURI) {
+        throw new Error('MONGODB_URI is required');
+    }
+
+    await mongoose.connect(mongoURI);
+    console.log('Connected to MongoDB');
+
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
     });
-    })
-    .catch((error) => {
-        console.error('Error connecting to MongoDB:', error);
-    });
+};
+
+start().catch((error) => {
+    console.error('Error starting server:', error);
+    process.exitCode = 1;
+});
